@@ -1,0 +1,17 @@
+bin/
+obj/
+Debug/
+Release/
+*.log
+TestResult.xml
+Version.cs
+Version.h
+Version.cpp
+*/bin/*
+*/obj/*
+/build/
+*.suo
+*.user
+
+
+.vscode/
