@@ -1,4 +1,4 @@
-using System;
+using System.Xml;
 using System.IO.Compression;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
@@ -46,20 +46,26 @@ public class DocxRepository
         Console.WriteLine($"Word Processing Document has been created at {fileName}");
     }
 
-    public Document extractDocxDocument()
+    public string extractDocxDocumentAsJson()
     {
 
         var fileName = @".\assets\Project proposal.docx";
 
-            using (WordprocessingDocument myDocument = WordprocessingDocument.Open(fileName, true))
+        using (WordprocessingDocument myDocument = WordprocessingDocument.Open(fileName, true))
+        {
+
+            IEnumerable<Paragraph> paragraphList = myDocument.MainDocumentPart.Document.Body.Elements().OfType<Paragraph>();
+            var proj = paragraphList.Select(p => p.ChildElements.OfType<Run>().Select(r => new
             {
-                Console.WriteLine(myDocument);
+                r.InnerText,
+                runProperties = r.ChildElements.OfType<RunProperties>().FirstOrDefault()?.Select(rp => new { rp.GetType().Name, Val = rp.GetAttributes().FirstOrDefault().Value })
+            }));
+            var json = JsonConvert.SerializeObject(proj, Newtonsoft.Json.Formatting.Indented);
 
-                var json = JsonConvert.SerializeObject(myDocument.MainDocumentPart.Document);
 
-                return myDocument.MainDocumentPart.Document;
-            }
-   }
+            return json;
+        }
+    }
 
 
 }

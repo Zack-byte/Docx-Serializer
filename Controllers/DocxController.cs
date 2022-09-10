@@ -16,13 +16,10 @@ public class DocxController : ControllerBase
     }
 
     [HttpGet(Name = "GetDocx")]
-    public Document Get()
+    public string Get()
     {
         var repo = new DocxRepository();
-        var document = repo.extractDocxDocument();
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        var json = System.Text.Json.JsonSerializer.Serialize<Document>(document, options);
-        Console.WriteLine(document.ToString());
+        var document = repo.extractDocxDocumentAsJson();
         return document;
     }
 }
