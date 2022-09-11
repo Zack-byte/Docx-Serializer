@@ -55,12 +55,30 @@ public class DocxRepository
         {
 
             IEnumerable<Paragraph> paragraphList = myDocument.MainDocumentPart.Document.Body.Elements().OfType<Paragraph>();
-            var proj = paragraphList.Select(p => p.ChildElements.OfType<Run>().Select(r => new
-            {
+            SectionProperties sectionProperties = myDocument.MainDocumentPart.Document.Body.ChildElements.OfType<SectionProperties>().FirstOrDefault();
+            PageMargin pageMargin = sectionProperties.ChildElements.OfType<PageMargin>().FirstOrDefault();
+            PageSize pageSize = sectionProperties.ChildElements.OfType<PageSize>().FirstOrDefault();
+            DocumentPageMargin margin = new DocumentPageMargin();
+            DocumentPageSize size = new DocumentPageSize();
+            margin.Bottom = pageMargin.Bottom;
+            margin.Left = pageMargin.Left;
+            margin.Right = pageMargin.Right;
+            margin.Top = pageMargin.Top;
+            margin.Footer = pageMargin.Footer;
+            margin.Header = pageMargin.Header;
+            size.Height = pageSize.Height;
+            size.Width = pageSize.Width;
+
+            
+            ShadowBody body = new ShadowBody(paragraphList.Select(p => new ShadowParagraph(p.ChildElements.OfType<Run>().Select(r => new
+            TextRun(
+            
                 r.InnerText,
-                runProperties = r.ChildElements.OfType<RunProperties>().FirstOrDefault()?.Select(rp => new { rp.GetType().Name, Val = rp.GetAttributes().FirstOrDefault().Value })
-            }));
-            var json = JsonConvert.SerializeObject(proj, Newtonsoft.Json.Formatting.Indented);
+                r.ChildElements.OfType<RunProperties>().FirstOrDefault()?.Select(rp => new TextRunAttribute( rp.GetType().Name, rp.GetAttributes().FirstOrDefault().Value ))
+            )))), new DocumentProperties(new DocumentHeaderReference(), new DocumentFooterReference(), size, margin, new DocumentPageNumberType(), new DocumentTitlePage()));
+
+            ShadowDocument document = new ShadowDocument(body);
+            var json = JsonConvert.SerializeObject(document, Newtonsoft.Json.Formatting.Indented);
 
 
             return json;
